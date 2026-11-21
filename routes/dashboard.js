@@ -4,47 +4,20 @@ const pool = require('../config/database');
 const protect = require('../middleware/auth');
 
 router.get('/metrics', protect, async (req, res) => {
-  try {
-    const totalTreatiesResult = await pool.query(
-      'SELECT COUNT(*) as count FROM treaty'
-    );
-    const totalTreaties = parseInt(totalTreatiesResult.rows[0].count);
+  // One pass over treaty; ::int and ::float8 make pg return JS numbers instead of strings.
+  const result = await pool.query(`
+    SELECT
+      COUNT(*)::int AS "totalTreaties",
+      COUNT(*) FILTER (WHERE treaty_status = 'active')::int AS "activeTreaties",
+      COUNT(*) FILTER (
+        WHERE treaty_renewal_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
+      )::int AS "upcomingRenewals",
+      COALESCE(SUM(earned_premium), 0)::float8 AS "totalPremium",
+      COALESCE(SUM(claims_incurred), 0)::float8 AS "totalClaims"
+    FROM treaty
+  `);
 
-    const activeTreatiesResult = await pool.query(
-      "SELECT COUNT(*) as count FROM treaty WHERE treaty_status = 'active'"
-    );
-    const activeTreaties = parseInt(activeTreatiesResult.rows[0].count);
-
-    const upcomingRenewalsResult = await pool.query(
-      `SELECT COUNT(*) as count FROM treaty 
-       WHERE treaty_renewal_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'`
-    );
-    const upcomingRenewals = parseInt(upcomingRenewalsResult.rows[0].count);
-
-    const totalPremiumResult = await pool.query(
-      'SELECT COALESCE(SUM(earned_premium), 0) as total FROM treaty'
-    );
-    const totalPremium = parseFloat(totalPremiumResult.rows[0].total);
-
-    const totalClaimsResult = await pool.query(
-      'SELECT COALESCE(SUM(claims_incurred), 0) as total FROM treaty'
-    );
-    const totalClaims = parseFloat(totalClaimsResult.rows[0].total);
-
-    res.json({
-      success: true,
-      metrics: {
-        totalTreaties,
-        activeTreaties,
-        upcomingRenewals,
-        totalPremium,
-        totalClaims
-      }
-    });
-  } catch (error) {
-    console.error('Dashboard metrics error:', error);
-    res.status(500).json({ success: false, message: error.message });
-  }
+  res.json({ success: true, metrics: result.rows[0] });
 });
 
 module.exports = router;

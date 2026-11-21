@@ -1,5 +1,9 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
 require('dotenv').config();
+
+// Return DATE columns as plain 'YYYY-MM-DD' strings. By default pg makes them local-midnight
+// JS Dates, which serialize to UTC and can show the previous day.
+types.setTypeParser(types.builtins.DATE, (value) => value);
 
 console.log('🔍 Loading database config...');
 console.log('DB_HOST:', process.env.DB_HOST);
