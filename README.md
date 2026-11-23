@@ -348,7 +348,7 @@ npm run import:cas -- ./clrd.csv    # or reads a local copy
 
 This loads **508 treaties from 273 US insurers** (120 High, 216 Medium, 172 Low risk). It runs in one transaction and is safe to re-run: cedents are reused by name, treaties are updated by `treaty_code`, and renewal dates are refreshed.
 
-**Source.** Meyers, G. and Shi, P., *Loss Reserving Data Pulled From NAIC Schedule P*, Casualty Actuarial Society: <https://www.casact.org/publications-research/research/research-resources/loss-reserving-data-pulled-naic-schedule-p>. The import reads the CSV copy (`clrd.csv`) in the [chainladder-python](https://github.com/casact/chainladder-python) repository (MPL-2.0), pinned to commit `46727b1`. Cite the CAS source in reports.
+**Source.** Meyers, G. and Shi, P., *Loss Reserving Data Pulled From NAIC Schedule P*, Casualty Actuarial Society: <https://www.casact.org/publications-research/research/research-resources/loss-reserving-data-pulled-naic-schedule-p>. The import reads the CSV copy (`clrd.csv`) in the [chainladder-python](https://github.com/casact/chainladder-python) repository (MPL-2.0), pinned to commit `46727b1`. 
 
 **What the file contains.** Net earned premium and incurred losses (including IBNR) for 379 US insurer groups, six lines of business, accident years 1988 to 1997, as known at the end of 1997. Amounts are USD thousands; the import converts them to USD.
 
